@@ -25,6 +25,7 @@ export class GlobalEventHandler {
     }
 
     emit(eventName: string, event: Event): void {
+        console.log('Emitting event', eventName, event);
         this.listeners.get(eventName)?.forEach(callback => {
             callback(event);
         });
