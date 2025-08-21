@@ -1,11 +1,11 @@
 import {Evented, type IControl, Map as MapLibreMap, Marker} from "maplibre-gl";
-import {DataProvider, DataProviderEventType} from "../DataProvider.ts";
-import type {NamedGeoReferencedObject} from "../enitites/NamedGeoReferencedObject.ts";
+import {DataProvider, DataProviderEventType} from "../DataProvider";
+import type {NamedGeoReferencedObject} from "../enitites/NamedGeoReferencedObject";
 import {icon} from "@fortawesome/fontawesome-svg-core";
 import {faMagnifyingGlass} from "@fortawesome/free-solid-svg-icons/faMagnifyingGlass";
 import {faMapLocationDot} from "@fortawesome/free-solid-svg-icons/faMapLocationDot";
 import {faXmark} from "@fortawesome/free-solid-svg-icons/faXmark";
-import {GlobalEventHandler} from "../GlobalEventHandler.ts";
+import {GlobalEventHandler} from "../GlobalEventHandler";
 
 /**
  * A control for MapLibre GL JS that allows users to toggle the visibility of map layers.

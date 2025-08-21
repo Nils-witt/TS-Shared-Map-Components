@@ -1,12 +1,11 @@
 import {Evented, type IControl, Map as MapLibreMap} from "maplibre-gl";
 import type {LayerInfo} from "../types/LayerInfo.ts";
-import {DataProvider, type DataProviderEvent, DataProviderEventType} from "../DataProvider.ts";
+import {DataProvider, type DataProviderEvent, DataProviderEventType} from "../DataProvider";
 import {icon} from "@fortawesome/fontawesome-svg-core";
 import {faMap} from "@fortawesome/free-solid-svg-icons/faMap";
 import {faXmark} from "@fortawesome/free-solid-svg-icons/faXmark";
 import {faGear} from "@fortawesome/free-solid-svg-icons/faGear";
-import {ApiProvider} from "../ApiProvider.ts";
-import {GlobalEventHandler} from "../GlobalEventHandler.ts";
+import {GlobalEventHandler} from "../GlobalEventHandler";
 
 /**
  * A control for MapLibre GL JS that allows users to toggle the visibility of map layers.
@@ -141,7 +140,7 @@ export class LayersControl extends Evented implements IControl {
             // Add the layer source
             this.map.addSource(layer.id, {
                 type: "raster",           // Use raster tiles
-                tiles: [layer.url + "?accesstoken=" + ApiProvider.getInstance().getToken()],       // URL template for the tiles
+                tiles: [layer.url + "?accesstoken=" + DataProvider.getInstance().getApiToken()],       // URL template for the tiles
                 tileSize: 256             // Standard tile size
             });
 
@@ -159,7 +158,7 @@ export class LayersControl extends Evented implements IControl {
                 // Add the layer source
                 this.map?.addSource(layer.id, {
                     type: "raster",           // Use raster tiles
-                    tiles: [layer.url + "?accesstoken=" + ApiProvider.getInstance().getToken()],       // URL template for the tiles
+                    tiles: [layer.url + "?accesstoken=" + DataProvider.getInstance().getApiToken()],       // URL template for the tiles
                     tileSize: 256             // Standard tile size
                 });
 
@@ -194,7 +193,7 @@ export class LayersControl extends Evented implements IControl {
                 url = new URL(layer.url.substring(0, layer.url.search("{z}")), window.location.origin); // Ensure the URL is absolute
             }
 
-            fetch(url.href + "/index.json?accesstoken=" + ApiProvider.getInstance().getToken()).then(async response => {
+            fetch(url.href + "/index.json?accesstoken=" + DataProvider.getInstance().getApiToken()).then(async response => {
                 if (!response.ok) {
                     return;
                 }
@@ -303,7 +302,7 @@ export class LayersControl extends Evented implements IControl {
                 for (let i = 0; i < missingFiles.length; i++) {
                     await new Promise<void>((resolve, reject) => {
 
-                        fetch(missingFiles[i] + "?accesstoken=" + ApiProvider.getInstance().getToken()).then(response => {
+                        fetch(missingFiles[i] + "?accesstoken=" + DataProvider.getInstance().getApiToken()).then(response => {
                             if (!response.ok) {
                                 console.error("Failed to fetch layer file:", missingFiles[i], "Status:", response.status);
                                 reject(false);

@@ -1,9 +1,8 @@
 import type {LayerInfo} from "./types/LayerInfo.ts";
-import {NamedGeoReferencedObject} from "./enitites/NamedGeoReferencedObject.ts";
-import {DataProvider} from "./DataProvider.ts";
-import {IMapGroup} from "./types/MapEntity.ts";
-import {Config} from "../Config.ts";
-import {GlobalEventHandler} from "./GlobalEventHandler.ts";
+import {NamedGeoReferencedObject} from "./enitites/NamedGeoReferencedObject";
+import {DataProvider} from "./DataProvider";
+import {IMapGroup} from "./types/MapEntity";
+import {GlobalEventHandler} from "./GlobalEventHandler";
 
 
 export class ApiProviderEvent extends Event {
@@ -27,10 +26,9 @@ export enum ApiProviderEventTypes {
 export class ApiProvider {
 
     private static instance: ApiProvider;
-    private token: string | undefined = undefined;
 
     private constructor() {
-        this.token = localStorage.getItem('authToken') || undefined; // Load token from local storage if available
+
     }
 
     public static getInstance(): ApiProvider {
@@ -40,9 +38,6 @@ export class ApiProvider {
         return ApiProvider.instance;
     }
 
-    public getToken(): string | undefined {
-        return this.token;
-    }
 
     public async loadAllData(): Promise<void> {
         this.getMapStyles().then(styles => {
@@ -68,12 +63,12 @@ export class ApiProvider {
     }
 
     public async testLogin(): Promise<void> {
-        const url = Config.getInstance().apiUrl + '/token/verify/';
+        const url = DataProvider.getInstance().getApiUrl() + '/token/verify/';
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
         let data = {
-            token: this.token
+            token: DataProvider.getInstance().getApiUrl()
         };
         const requestOptions = {
             method: "POST",
@@ -92,7 +87,7 @@ export class ApiProvider {
 
 
     public async login(username: string, password: string): Promise<void> {
-        const url = Config.getInstance().apiUrl + '/token/';
+        const url = DataProvider.getInstance().getApiUrl() + '/token/';
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
@@ -109,7 +104,7 @@ export class ApiProvider {
             console.log("Login response:", res.status, res.statusText);
             if (res.ok) {
                 let data = await res.json();
-                this.token = data.access; // Store the token for future requests
+                DataProvider.getInstance().setApiToken(data.access); // Store the token for future requests
                 localStorage.setItem('authToken', data.access); // Store token in local storage
                 this.notifyListeners(ApiProviderEventTypes.LOGIN_SUCCESS, {message: "Login successful"});
             } else {
@@ -122,8 +117,8 @@ export class ApiProvider {
 
     private async callApi(url: string, method: string, headers: Headers = new Headers(), body?: any): Promise<any> {
 
-        if (this.token) {
-            headers.append("Authorization", `Bearer ${this.token}`);
+        if (DataProvider.getInstance().getApiToken()) {
+            headers.append("Authorization", `Bearer ${DataProvider.getInstance().getApiToken()}`);
         }
 
         const requestOptions = {
@@ -157,7 +152,9 @@ export class ApiProvider {
         let overlays: LayerInfo[] = [];
 
         try {
-            const url = Config.getInstance().apiUrl + '/overlays/'
+            const url = DataProvider.getInstance().getApiUrl() + '/overlays/'
+            console.log("Fetching overlay layers from:", url);
+            console.log("Using token:", DataProvider.getInstance().getApiToken());
             return await this.fetchData(url);
         } catch (error) {
             console.error("Error fetching overlay layers:", error);
@@ -169,7 +166,7 @@ export class ApiProvider {
         let overlays: LayerInfo[] = [];
 
         try {
-            const url = Config.getInstance().apiUrl + '/styles/'
+            const url = DataProvider.getInstance().getApiUrl() + '/styles/'
             return await this.fetchData(url);
         } catch (error) {
             console.error("Error fetching overlay layers:", error);
@@ -180,7 +177,7 @@ export class ApiProvider {
     public async getMapItems(): Promise<NamedGeoReferencedObject[]> {
 
         try {
-            const url = Config.getInstance().apiUrl + '/items/'
+            const url = DataProvider.getInstance().getApiUrl() + '/items/'
             let data = await this.fetchData(url);
             return data.map((item: any) => {
                 return new NamedGeoReferencedObject({
@@ -205,7 +202,7 @@ export class ApiProvider {
         :
         Promise<IMapGroup[]> {
         try {
-            const url = Config.getInstance().apiUrl + '/map_groups/'
+            const url = DataProvider.getInstance().getApiUrl() + '/map_groups/'
             return await this.fetchData(url);
         } catch (error) {
             console.error("Error fetching overlay layers:", error);
@@ -214,17 +211,17 @@ export class ApiProvider {
     }
 
     public async saveMapItem(item: NamedGeoReferencedObject, updateDataProvider: boolean = true): Promise<NamedGeoReferencedObject | null> {
-        let url = Config.getInstance().apiUrl + `/items/${item.id}/`;
+        let url = DataProvider.getInstance().getApiUrl() + `/items/${item.id}/`;
         let method = "PUT";
 
         if (!item.id) {
-            url = Config.getInstance().apiUrl + '/items/';
+            url = DataProvider.getInstance().getApiUrl() + '/items/';
             method = "POST"; // Use POST for creating new items
         }
 
         const data = {
             ...item,
-            group: item.groupId ? Config.getInstance().apiUrl + '/map_groups/' + item.groupId + '/' : null,
+            group: item.groupId ? DataProvider.getInstance().getApiUrl() + '/map_groups/' + item.groupId + '/' : null,
         }
 
         try {
@@ -250,7 +247,7 @@ export class ApiProvider {
     }
 
     public async deleteMapItem(itemId: string): Promise<boolean> {
-        let url = Config.getInstance().apiUrl + `/items/${itemId}/`;
+        let url = DataProvider.getInstance().getApiUrl() + `/items/${itemId}/`;
         let method = "DELETE";
 
         try {

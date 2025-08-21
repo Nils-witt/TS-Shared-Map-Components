@@ -9,10 +9,11 @@
  * Future implementation will include BroadcastChannel communication for cross-tab synchronization.
  */
 
-import type {NamedGeoReferencedObject} from "./enitites/NamedGeoReferencedObject.ts";
-import type {LayerInfo} from "./types/LayerInfo.ts";
-import {IMapGroup} from "./types/MapEntity.ts";
-import {GlobalEventHandler} from "./GlobalEventHandler.ts";
+import type {NamedGeoReferencedObject} from "./enitites/NamedGeoReferencedObject";
+import type {LayerInfo} from "./types/LayerInfo";
+import {IMapGroup} from "./types/MapEntity";
+import {GlobalEventHandler} from "./GlobalEventHandler";
+import {LngLat} from "maplibre-gl";
 
 /**
  * Interface representing an event dispatched by the DataProvider.
@@ -54,6 +55,17 @@ export enum DataProviderEventType {
     OVERLAY_UPDATED = 'overlay-updated',
     /** Triggered when an overlay is removed **/
     OVERLAY_DELETED = 'overlay-deleted',
+
+    VIEW_MODE_CHANGED = 'view-mode-changed',
+    MAP_CENTER_UPDATED = 'map-center-updated',
+    MAP_ZOOM_UPDATED = 'map-zoom-updated',
+    API_URL_UPDATED = 'api-url-updated',
+    API_TOKEN_UPDATED = 'api-token-updated',
+}
+
+export enum ViewMode {
+    VIEW = 'view',
+    EDIT = 'edit'
 }
 
 /**
@@ -74,6 +86,15 @@ export class DataProvider {
 
     /** Collection of map groups for organizing map elements */
     private mapGroups: Map<string, IMapGroup> = new Map();
+
+
+    private mapCenter: LngLat = new LngLat(0.0, 0.0); // Default center of the map
+    private mapZoom: number = 1;
+    private apiUrl: string = '';
+    private apiToken: string = '';
+
+    private mode: ViewMode = ViewMode.VIEW;
+
     /** Singleton instance reference */
     private static instance: DataProvider;
 
@@ -113,7 +134,7 @@ export class DataProvider {
      * @param id - Unique identifier for the location
      * @param item - The location object to store
      */
-    addMapItem(id: string, item: NamedGeoReferencedObject): void {
+    public addMapItem(id: string, item: NamedGeoReferencedObject): void {
         if (this.mapLocations.has(id)) {
             this.mapLocations.set(id, item);
             this.triggerEvent(DataProviderEventType.MAP_ITEM_UPDATED, item);
@@ -128,12 +149,12 @@ export class DataProvider {
      *
      * @returns Map of all location objects indexed by their IDs
      */
-    getMapLocations(): Map<string, NamedGeoReferencedObject> {
+    public getMapLocations(): Map<string, NamedGeoReferencedObject> {
         return this.mapLocations;
     }
 
 
-    deleteMapLocation(id: string): void {
+    public deleteMapLocation(id: string): void {
         if (this.mapLocations.has(id)) {
             const item = this.mapLocations.get(id);
             this.mapLocations.delete(id);
@@ -149,7 +170,7 @@ export class DataProvider {
      * @param id - Unique identifier for the group
      * @param group - The map group object to store
      */
-    addMapGroup(id: string, group: IMapGroup): void {
+    public addMapGroup(id: string, group: IMapGroup): void {
         if (this.mapGroups.has(id)) {
             this.mapGroups.set(id, group);
             this.triggerEvent(DataProviderEventType.MAP_GROUPS_UPDATED, group);
@@ -164,7 +185,7 @@ export class DataProvider {
      *
      * @returns Map of all group objects indexed by their IDs
      */
-    getMapGroups(): Map<string, IMapGroup> {
+    public getMapGroups(): Map<string, IMapGroup> {
         return this.mapGroups;
     }
 
@@ -173,7 +194,7 @@ export class DataProvider {
      *
      * @param style - The map style configuration to use
      */
-    setMapStyle(style: LayerInfo): void {
+    public setMapStyle(style: LayerInfo): void {
         this.mapStyle = style;
         this.triggerEvent(DataProviderEventType.MAP_STYLE_UPDATED, style);
     }
@@ -183,7 +204,7 @@ export class DataProvider {
      *
      * @returns The current map style or undefined if not set
      */
-    getMapStyle(): LayerInfo | undefined {
+    public getMapStyle(): LayerInfo | undefined {
         return this.mapStyle;
     }
 
@@ -193,7 +214,7 @@ export class DataProvider {
      * @param id - Unique identifier for the overlay
      * @param overlay - The overlay configuration to store
      */
-    addOverlay(id: string, overlay: LayerInfo): void {
+    public addOverlay(id: string, overlay: LayerInfo): void {
         if (this.overlays.has(id)) {
             this.overlays.set(id, overlay);
             this.triggerEvent(DataProviderEventType.OVERLAY_UPDATED, overlay);
@@ -203,7 +224,7 @@ export class DataProvider {
         }
     }
 
-    removeOverlay(id: string): void {
+    public removeOverlay(id: string): void {
         if (this.overlays.has(id)) {
             const overlay = this.overlays.get(id);
             this.overlays.delete(id);
@@ -218,7 +239,55 @@ export class DataProvider {
      *
      * @returns Map of all overlay configurations indexed by their IDs
      */
-    getOverlays(): Map<string, LayerInfo> {
+    public getOverlays(): Map<string, LayerInfo> {
         return this.overlays;
     }
+
+    public getMode(): ViewMode {
+        return this.mode;
+    }
+
+    public setViewMode(mode: ViewMode): void {
+        if (this.mode == mode) return;
+
+        this.mode = mode;
+        this.triggerEvent(DataProviderEventType.VIEW_MODE_CHANGED, mode);
+    }
+
+    public getMapCenter(): LngLat {
+        return this.mapCenter;
+    }
+
+    public setMapCenter(center: LngLat): void {
+        this.mapCenter = center;
+        this.triggerEvent(DataProviderEventType.MAP_CENTER_UPDATED, center);
+    }
+
+    public getMapZoom(): number {
+        return this.mapZoom;
+    }
+
+    public setMapZoom(zoom: number): void {
+        this.mapZoom = zoom;
+        this.triggerEvent(DataProviderEventType.MAP_ZOOM_UPDATED, zoom);
+
+    }
+
+    public setApiUrl(url: string): void {
+        this.apiUrl = url;
+        this.triggerEvent(DataProviderEventType.API_URL_UPDATED, url);
+    }
+    public getApiUrl(): string {
+        return this.apiUrl;
+    }
+
+    public setApiToken(token: string): void {
+        this.apiToken = token;
+        this.triggerEvent(DataProviderEventType.API_TOKEN_UPDATED, token);
+    }
+
+    public getApiToken(): string {
+        return this.apiToken;
+    }
+
 }
