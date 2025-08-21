@@ -1,11 +1,11 @@
 import {Evented, type IControl, Map as MapLibreMap, Marker} from "maplibre-gl";
-import UrlDataHandler from "../../dataProviders/UrlDataHandler.ts";
-import {DataProvider, DataProviderEventType} from "../../dataProviders/DataProvider.ts";
+import {DataProvider, DataProviderEventType} from "../DataProvider.ts";
 import type {NamedGeoReferencedObject} from "../enitites/NamedGeoReferencedObject.ts";
 import {icon} from "@fortawesome/fontawesome-svg-core";
 import {faMagnifyingGlass} from "@fortawesome/free-solid-svg-icons/faMagnifyingGlass";
 import {faMapLocationDot} from "@fortawesome/free-solid-svg-icons/faMapLocationDot";
 import {faXmark} from "@fortawesome/free-solid-svg-icons/faXmark";
+import {GlobalEventHandler} from "../GlobalEventHandler.ts";
 
 /**
  * A control for MapLibre GL JS that allows users to toggle the visibility of map layers.
@@ -68,7 +68,7 @@ export class SearchControl extends Evented implements IControl {
 
         this.createSearchContainer();
 
-        DataProvider.getInstance().on(DataProviderEventType.MAP_ITEM_UPDATED, () => {
+        GlobalEventHandler.getInstance().on(DataProviderEventType.MAP_ITEM_UPDATED, () => {
             if (this.searchInput && this.searchInput.value.trim().length > 0) {
                 this.onSearchBoxUpdate(this.searchInput.value);
             }
@@ -247,10 +247,7 @@ export class SearchControl extends Evented implements IControl {
      * @private
      */
     private loadStateFromUrl() {
-        let queryString = UrlDataHandler.getQueryString();
-        if (queryString) {
-            this.search(queryString);
-        }
+
     }
 
     /**

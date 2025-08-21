@@ -1,4 +1,4 @@
-import type {INamedGeoReferencedObject} from "../../types/MapEntity.ts";
+import type {INamedGeoReferencedObject} from "../types/MapEntity.ts";
 import type {TaktischesZeichen} from "taktische-zeichen-core/dist/types/types";
 
 

@@ -1,11 +1,12 @@
 import {Evented, type IControl, Map as MapLibreMap} from "maplibre-gl";
-import type {LayerInfo} from "../../types/LayerInfo.ts";
-import {DataProvider, type DataProviderEvent, DataProviderEventType} from "../../dataProviders/DataProvider.ts";
+import type {LayerInfo} from "../types/LayerInfo.ts";
+import {DataProvider, type DataProviderEvent, DataProviderEventType} from "../DataProvider.ts";
 import {icon} from "@fortawesome/fontawesome-svg-core";
 import {faMap} from "@fortawesome/free-solid-svg-icons/faMap";
 import {faXmark} from "@fortawesome/free-solid-svg-icons/faXmark";
 import {faGear} from "@fortawesome/free-solid-svg-icons/faGear";
-import {ApiProvider} from "../../dataProviders/ApiProvider.ts";
+import {ApiProvider} from "../ApiProvider.ts";
+import {GlobalEventHandler} from "../GlobalEventHandler.ts";
 
 /**
  * A control for MapLibre GL JS that allows users to toggle the visibility of map layers.
@@ -73,7 +74,7 @@ export class LayersControl extends Evented implements IControl {
         this.container.appendChild(this.spanIcon);
 
         // Create a map of layer IDs to LayerInfo objects for quick lookup
-        DataProvider.getInstance().on(DataProviderEventType.OVERLAY_ADDED, (event: DataProviderEvent) => {
+        GlobalEventHandler.getInstance().on(DataProviderEventType.OVERLAY_ADDED, (event: DataProviderEvent) => {
             let data = event.data as LayerInfo;
             console.log("LayersControl: Overlay added", data);
             this.addLayer(data);
