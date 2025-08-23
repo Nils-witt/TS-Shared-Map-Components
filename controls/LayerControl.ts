@@ -461,9 +461,31 @@ export class LayersControl extends Evented implements IControl {
             }
         });
 
+        let logoutContainer = document.createElement("div");
+        logoutContainer.classList.add("mb-4");
+        let logoutButton = document.createElement("button");
+        logoutButton.classList.add("bg-red-500", "text-white", "px-4", "py-2", "rounded", "hover:bg-red-600");
+        logoutButton.textContent = "Logout";
+        logoutButton.addEventListener("click", () => {
+            if (confirm("Are you sure you want to logout? This will clear all cached data.")) {
+                caches.keys().then((cacheNames) => {
+                    cacheNames.forEach((cacheName) => {
+                        caches.delete(cacheName);
+                    });
+                }).then(() => {
+                    localStorage.clear();
+                    location.reload(); // Reload the page to apply changes
+                }).catch((error) => {
+                    console.error("Error clearing caches:", error);
+                });
+            }
+        });
+        logoutContainer.appendChild(logoutButton);
+
 
         contentContainer.appendChild(downloadContainer);
         contentContainer.appendChild(resetContainer);
+        contentContainer.appendChild(logoutContainer);
 
 
         container.appendChild(contentContainer);

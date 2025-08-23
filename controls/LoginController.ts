@@ -74,6 +74,7 @@ export class LoginController {
             } catch (error) {
                 console.error("Login failed:", error);
                 alert("Login failed. Please check your credentials.");
+                button.classList.add('bg-red-500'); // Change button color to indicate failure
             }
         };
 
@@ -85,12 +86,32 @@ export class LoginController {
         container.appendChild(passwordDiv);
 
         container.appendChild(button);
+        let guestLogin = document.createElement('button');
+        guestLogin.textContent = 'Guest Login';
+        guestLogin.classList.add('bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-2', 'px-4', 'rounded', 'focus:outline-none', 'focus:shadow-outline', 'mt-1');
+        guestLogin.onclick = async (e) => {
+            e.preventDefault();
+            button.disabled = true; // Disable the button to prevent multiple clicks
+            guestLogin.disabled = true; // Disable the button to prevent multiple clicks
+            guestLogin.classList.add('bg-yellow-500');
+            try {
+                await ApiProvider.getInstance().login("guest", "defgueps11");
+            } catch (error) {
+                console.error("Login failed:", error);
+                alert("Login failed. Please check your credentials.");
+                guestLogin.classList.add('bg-red-500'); // Change button color to indicate failure
+            }
+        }
+        container.appendChild(guestLogin);
+
 
         GlobalEventHandler.getInstance().on(ApiProviderEventTypes.LOGIN_SUCCESS, () => {
             this.container.classList.add('hidden')
         });
         GlobalEventHandler.getInstance().on(ApiProviderEventTypes.LOGIN_FAILURE, () => {
             button.disabled = false; // Re-enable the button on failure
+            button.classList.add('bg-red-500');
+            guestLogin.disabled = false;
         });
     }
 
